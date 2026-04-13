@@ -5,27 +5,9 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 local selectedBase = 15
-local loopEnabled = true
-local cooldownUntil = 0
+local loopEnabled = false
 
--- 🔧 STUCK DETECTION
-local lastPosition = nil
-local lastMoveTime = os.clock()
-
-local STUCK_TIME = 45 -- seconds stuck before reset
-local MIN_MOVE_DISTANCE = 7.5
-
-local stuckCooldown = 0
-
-local reloadRemote = game:GetService("ReplicatedStorage")
-	:WaitForChild("Packages")
-	:WaitForChild("_Index")
-	:WaitForChild("sleitnick_knit@1.7.0")
-	:WaitForChild("knit")
-	:WaitForChild("Services")
-	:WaitForChild("PlayerService")
-	:WaitForChild("RF")
-	:WaitForChild("ReloadCharacter")
+local cooldownUntil = 0 -- << ADD THIS
 
 local baseCFrames = {
 	[1] = CFrame.new(651.586548, 53.5382652, -2123.02686),
@@ -60,44 +42,18 @@ end)
 RunService.Heartbeat:Connect(function()
 	if not loopEnabled then return end
 
-	-- GLOBAL COOLDOWN
-	if os.clock() < cooldownUntil then return end
+	-- 🔥 GLOBAL COOLDOWN BLOCK
+	if os.clock() < cooldownUntil then
+		return
+	end
+
+	local originalFirstCFrame = baseCFrames[selectedBase] or baseCFrames[15]
 
 	local character = player.Character
 	local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
-	----------------------------------------------------------------
-	-- 🔧 STUCK DETECTION LOGIC
-	----------------------------------------------------------------
-	if hrp then
-		local currentPos = hrp.Position
-
-		if lastPosition then
-			local dist = (currentPos - lastPosition).Magnitude
-
-			if dist > MIN_MOVE_DISTANCE then
-				lastMoveTime = os.clock()
-			end
-		end
-
-		lastPosition = currentPos
-
-		if os.clock() - lastMoveTime >= STUCK_TIME and os.clock() > stuckCooldown then
-			stuckCooldown = os.clock() + 3
-
-			reloadRemote:InvokeServer()
-
-			lastMoveTime = os.clock()
-		end
-	end
-
-	----------------------------------------------------------------
-	-- RUNNING MODEL HANDLER
-	----------------------------------------------------------------
 	local runningModelsFolder = workspace:FindFirstChild("RunningModels")
 	local runningModel = runningModelsFolder and runningModelsFolder:FindFirstChild(tostring(player.UserId))
-
-	local originalFirstCFrame = baseCFrames[selectedBase] or baseCFrames[15]
 
 	if runningModel then
 		for _, part in ipairs(runningModel:GetDescendants()) do
@@ -108,9 +64,6 @@ RunService.Heartbeat:Connect(function()
 		return
 	end
 
-	----------------------------------------------------------------
-	-- CHASE LOGIC
-	----------------------------------------------------------------
 	if hrp then
 		local chasedSign = hrp:FindFirstChild("PlayerChasedSign")
 
@@ -129,9 +82,7 @@ RunService.Heartbeat:Connect(function()
 		end
 	end
 
-	----------------------------------------------------------------
-	-- FALLBACK (TRIGGERS COOLDOWN)
-	----------------------------------------------------------------
+	-- ✅ FALLBACK (this is now the trigger)
 	if hrp then
 		hrp.CFrame = fallbackCFrame
 		cooldownUntil = os.clock() + 1.25
