@@ -14,7 +14,7 @@ local sellRemote = ReplicatedStorage
     :WaitForChild("RF")
     :WaitForChild("SellBrainrot")
 
-local enabled = false
+local enabled = true
 
 local function trySellTool(tool)
     if not tool:IsA("Tool") then return end
