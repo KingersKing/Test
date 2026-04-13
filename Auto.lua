@@ -85,6 +85,6 @@ RunService.Heartbeat:Connect(function()
 	-- ✅ FALLBACK (this is now the trigger)
 	if hrp then
 		hrp.CFrame = fallbackCFrame
-		cooldownUntil = os.clock() + 1.25
+		cooldownUntil = os.clock() + 0.75
 	end
 end)
