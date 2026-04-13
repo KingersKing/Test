@@ -12,7 +12,7 @@ local cooldownUntil = 0
 local lastPosition = nil
 local lastMoveTime = os.clock()
 
-local STUCK_TIME = 15 -- seconds stuck before reset
+local STUCK_TIME = 45 -- seconds stuck before reset
 local MIN_MOVE_DISTANCE = 7.5
 
 local stuckCooldown = 0
