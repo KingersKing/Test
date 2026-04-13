@@ -16,33 +16,42 @@ local openRemote = knit:WaitForChild("Services"):WaitForChild("LuckyBlockService
 
 local enabled = false
 
--- Function to check if any LuckyBlocks exist in backpack
+-- Function to check Backpack AND Character (in case item is equipped)
 local function hasLuckyBlocks()
+    local char = player.Character
+    
+    -- Check Backpack
     for _, item in ipairs(backpack:GetChildren()) do
-        if item.Name:find("LuckyBlock") then
-            return true
+        if item.Name:find("LuckyBlock") then return true end
+    end
+    
+    -- Check Character (Equipped items)
+    if char then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and item.Name:find("LuckyBlock") then return true end
         end
     end
+    
     return false
 end
 
 -- Toggle with V
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
+    
     if input.KeyCode == Enum.KeyCode.V then
         if not enabled then
-            -- Check if we have blocks BEFORE turning on
-            if hasLuckyBlocks() then
-                enabled = true
-                print("LuckyBlock loop: ENABLED")
-            else
-                warn("Cannot enable: No LuckyBlocks in backpack!")
-                enabled = false
+            -- HARD BLOCK: If search returns false, we stop here.
+            if not hasLuckyBlocks() then
+                warn("❌ ACTION REJECTED: No LuckyBlocks found in inventory or equipped!")
+                return 
             end
+            
+            enabled = true
+            print("✅ LuckyBlock loop: STARTED")
         else
-            -- If it's already on, just turn it off
             enabled = false
-            print("LuckyBlock loop: DISABLED")
+            print("🛑 LuckyBlock loop: STOPPED")
         end
     end
 end)
@@ -50,7 +59,6 @@ end)
 task.spawn(function()
     while true do
         if enabled then
-
             -- STEP 1: Pickup slots 1-30
             for i = 1,30 do
                 pcall(function()
@@ -63,40 +71,33 @@ task.spawn(function()
             local foundIds = {}
             local slot = 1
 
-            -- STEP 2: scan backpack
+            -- STEP 2: scan backpack (items usually go here after pickup)
             for _,item in ipairs(backpack:GetChildren()) do
                 if slot > 30 then break end
-
                 if item.Name:find("LuckyBlock") then
                     local id = item:GetAttribute("EntityId")
-
                     if id then
                         table.insert(foundIds, id)
-
                         pcall(function()
                             placeRemote:InvokeServer(id, tostring(slot))
                         end)
-
                         slot += 1
                     end
                 end
             end
 
-            -- If no LuckyBlocks found during the loop, shut off
+            -- If nothing was found after the pickup attempt, kill the loop
             if #foundIds == 0 then
-                print("No LuckyBlocks left. Script auto-disabled.")
+                warn("Empty: Auto-disabling.")
                 enabled = false
             else
                 task.wait(0.25)
-
                 -- STEP 3: open placed blocks
                 for _,id in ipairs(foundIds) do
                     pcall(function()
                         openRemote:InvokeServer(id)
                     end)
                 end
-
-                -- STEP 4: wait before repeating
                 task.wait(10)
             end
         else
