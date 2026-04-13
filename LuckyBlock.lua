@@ -36,7 +36,7 @@ task.spawn(function()
 				end)
 			end
 
-			task.wait(0.5)
+			task.wait(0.25)
 
 			local foundIds = {}
 			local slot = 1
@@ -67,7 +67,7 @@ task.spawn(function()
 				continue
 			end
 
-			task.wait(0.5)
+			task.wait(0.25)
 
 			-- STEP 3: open placed blocks
 			for _,id in ipairs(foundIds) do
@@ -80,7 +80,7 @@ task.spawn(function()
 			task.wait(10)
 
 		else
-			task.wait(0.2)
+			task.wait(0.05)
 		end
 	end
 end)
