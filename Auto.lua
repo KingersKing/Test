@@ -5,7 +5,7 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 local selectedBase = 15
-local loopEnabled = false
+local loopEnabled = true
 local cooldownUntil = 0
 
 -- 🔧 STUCK DETECTION
